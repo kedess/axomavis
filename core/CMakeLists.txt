@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.21)
 project(axomavis)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -25,8 +25,16 @@ add_compile_options(
     -Wunused-result
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavdevice libavcodec libavformat libavutil)
+
 set(SRC_FILES
     src/main.cpp
 )
 
+include_directories(${FFMPEG_INCLUDE_DIRS})
+link_directories(${FFMPEG_LIBRARY_DIRS})
+
 add_executable(${PROJECT_NAME} ${SRC_FILES})
+
+target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES})
