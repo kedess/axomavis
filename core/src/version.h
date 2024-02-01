@@ -1,0 +1,1 @@
+const char * VERSION_APP = "0.1.0";

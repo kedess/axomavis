@@ -37,4 +37,6 @@ link_directories(${FFMPEG_LIBRARY_DIRS})
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
+target_include_directories(${PROJECT_NAME} PRIVATE "core/src/plog/")
+
 target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES})
