@@ -30,6 +30,12 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavdevice libavcodec libavfo
 
 set(SRC_FILES
     src/main.cpp
+    src/capture/capture.cpp
+    src/capture/capture.h
+    src/archive/archive.cpp
+    src/archive/archive.h
+    src/utils/avformat.h
+    src/utils/avpkt.h
 )
 
 include_directories(${FFMPEG_INCLUDE_DIRS})
