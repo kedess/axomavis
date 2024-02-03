@@ -14,7 +14,7 @@ axomavis::Archive::Archive(std::vector<AVCodecParameters*> codec_params_list, co
     std::stringstream path;
     path << "/tmp/axomavis/" << id << "/";
     prefix_path = path.str();
-    fs::create_directory(prefix_path);
+    fs::create_directories(prefix_path);
 }
 axomavis::Archive::~Archive() {
     if(fmt_out) {
