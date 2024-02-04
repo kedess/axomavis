@@ -54,9 +54,13 @@ namespace axomavis {
                     ss << "Error occurred when opening output file [" << filename << "]";
                     throw std::runtime_error(ss.str());
                 }
+                is_header_wrote = true;
             }
             ~AVFormatOutput() {
                 if(ctx) {
+                    if (is_header_wrote) {
+                        av_write_trailer(ctx);
+                    }
                     if (ctx->pb) {
                         avio_close(ctx->pb);
                     }
@@ -68,5 +72,6 @@ namespace axomavis {
             }
         private:
             AVFormatContext * ctx = nullptr;
+            bool is_header_wrote = false;
     };
 }
