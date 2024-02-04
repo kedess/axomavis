@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <csignal>
+#include <condition_variable>
+#include <mutex>
 #include <plog/Log.h>
 #include <plog/Initializers/ConsoleInitializer.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
@@ -13,9 +15,14 @@ extern "C"{
 #include "version.h"
 #include "capture/capture.h"
 
+std::condition_variable is_stop_app_cond;
+std::mutex is_stop_app_mutex;
+
 volatile std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
     signal_num = param;
+    std::unique_lock<std::mutex> lock(is_stop_app_mutex);
+    is_stop_app_cond.notify_one();
     LOGI << "Received signal SIGINT";
 }
 
@@ -33,10 +40,20 @@ int main(/*int argc, char * argv[]*/) {
     avformat_network_init();
     av_log_set_level(AV_LOG_QUIET);
 
-    {
-        axomavis::Capture capture("camera-1", "rtsp://admin:admin@192.168.0.1:554/stream");
-        std::thread th(&axomavis::Capture::run, &capture);
-        th.join();
+    std::vector<std::thread> threads;
+
+    axomavis::Capture capture("camera-1", "rtsp://admin:admin@192.168.0.1:554/stream");
+    threads.emplace_back(std::thread(&axomavis::Capture::run, &capture));
+
+    std::unique_lock<std::mutex> lock(is_stop_app_mutex);
+    is_stop_app_cond.wait(lock, []() {
+        return signal_num != -1;
+    });
+
+    for (auto & thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 
     LOGI << "Finished app Axomavis";
