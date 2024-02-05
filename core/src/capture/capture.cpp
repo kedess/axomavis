@@ -15,9 +15,14 @@ extern "C"{
 extern volatile std::sig_atomic_t signal_num;
 
 axomavis::Capture::Capture(const char * id, const char * url) : id(id), url(url) {
+    state.reset(new StreamPendingState);
     if (strlen(id) == 0 || strlen(url) == 0){
-        throw std::runtime_error("Stream id and url cannot be empty. Incorrect stream configuration");
+        state.reset(new StreamErrorState("Stream id and url cannot be empty. Incorrect stream configuration"));
     }
+}
+
+axomavis::StreamStateEnum axomavis::Capture::getStateType() const {
+    return state->get_type();
 }
 
 int check_read_frame(void* obj) {
@@ -38,7 +43,7 @@ void axomavis::Capture::updateTimePoint() {
 }
 
 void axomavis::Capture::run() noexcept {
-    while (signal_num == -1) {
+    while (signal_num == -1 && getStateType() != StreamStateEnum::Error) {
         try {
             LOGI << "Attempting to start a stream [" << id << "]";
             updateTimePoint();
@@ -70,11 +75,13 @@ void axomavis::Capture::run() noexcept {
             axomavis::Archive archive(codec_params_list, id);
             axomavis::AVPkt pkt;
             
+            set_running_state();
             while (signal_num == -1 && av_read_frame(fmt_in_ctx, pkt.getPacket()) >= 0) {
                 updateTimePoint();
                 archive.send_pkt(pkt, fmt_in);
                 av_packet_unref(pkt.getPacket());
             }
+            set_pending_state();
             LOGW << "Connection to the stream [" << id << "]" << " is lost";
             std::this_thread::sleep_for(std::chrono::seconds(5));
         } catch (const std::exception & ex) {
@@ -111,4 +118,13 @@ std::vector<AVCodecParameters *> axomavis::Capture::fetch_params(axomavis::AVFor
         }
     }
     return codec_params_list;
+}
+void axomavis::Capture::set_pending_state() {
+    state->set_pending_state(state);
+}
+void axomavis::Capture::set_running_state() {
+    state->set_pending_state(state);
+}
+void axomavis::Capture::set_error_state(const char * description) {
+    state->set_error_state(state, description);
 }

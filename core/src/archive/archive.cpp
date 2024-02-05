@@ -11,9 +11,6 @@ extern "C"{
 
 axomavis::Archive::Archive(std::vector<AVCodecParameters*> codec_params_list, const char * id) 
 : codec_params_list(codec_params_list) {
-    if (strlen(id) == 0){
-        throw std::runtime_error("Stream id cannot be empty");
-    }
     std::stringstream path;
     path << "/tmp/axomavis/" << id << "/";
     prefix_path = path.str();
