@@ -15,6 +15,9 @@ extern "C"{
 extern volatile std::sig_atomic_t signal_num;
 
 axomavis::Capture::Capture(const char * id, const char * url) : id(id), url(url) {
+    if (strlen(id) == 0 || strlen(url) == 0){
+        throw std::runtime_error("Stream id and url cannot be empty. Incorrect stream configuration");
+    }
 }
 
 int check_read_frame(void* obj) {
