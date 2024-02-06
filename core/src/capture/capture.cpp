@@ -25,7 +25,7 @@ axomavis::StreamStateEnum axomavis::Capture::getStateType() const {
     return state->get_type();
 }
 
-int check_read_frame(void* obj) {
+int check_latency_read_packet(void* obj) {
     auto self = reinterpret_cast<axomavis::Capture*>(obj);
     auto tp = std::chrono::steady_clock::now();
     if (std::chrono::duration_cast<std::chrono::seconds>(tp - self->getTimePoint()).count() > 10){
@@ -53,7 +53,11 @@ void axomavis::Capture::run() noexcept {
             updateTimePoint();
             AVFormatInput fmt_in;
             auto fmt_in_ctx = fmt_in.getContext();
-            AVIOInterruptCB icb= {check_read_frame,reinterpret_cast<void*>(this)};
+            /*
+            * Функция следит за временем задержки получения пакетов из потока,
+            * используя переменную time_point
+            */
+            AVIOInterruptCB icb= {check_latency_read_packet,reinterpret_cast<void*>(this)};
             fmt_in_ctx->interrupt_callback = icb;
             fmt_in_ctx->interrupt_callback.opaque = this;
             if (avformat_open_input(&fmt_in_ctx, url, nullptr, nullptr) < 0) {
@@ -83,15 +87,17 @@ void axomavis::Capture::run() noexcept {
             set_running_state();
             while (signal_num == -1 && av_read_frame(fmt_in_ctx, pkt.getPacket()) >= 0) {
                 updateTimePoint();
-                archive.send_pkt(pkt, fmt_in);
+                archive.recv_pkt(pkt, fmt_in);
                 av_packet_unref(pkt.getPacket());
             }
             /*
             * Пропало соединен с потоком, ставим состояние PENDING
             */
-            set_pending_state();
-            LOGW << "Connection to the stream [" << id << "]" << " is lost";
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            if (signal_num == -1) {
+                set_pending_state();
+                LOGW << "Connection to the stream [" << id << "]" << " is lost";
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+            }
         } catch (const std::exception & ex) {
             LOGE << ex.what();
             /*

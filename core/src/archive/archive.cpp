@@ -22,7 +22,7 @@ axomavis::Archive::~Archive() {
     }
 }
 
-void axomavis::Archive::send_pkt(AVPkt & pkt, AVFormatInput & fmt_in) {
+void axomavis::Archive::recv_pkt(AVPkt & pkt, AVFormatInput & fmt_in) {
     auto packet = pkt.getPacket();
     auto is_key = packet->flags & AV_PKT_FLAG_KEY;
     if (is_key == 1 && fmt_out) {
