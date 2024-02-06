@@ -43,6 +43,10 @@ void axomavis::Capture::updateTimePoint() {
 }
 
 void axomavis::Capture::run() noexcept {
+    /*
+    * Крутимся в цикле и пытаемя подключится заново, пока мы не в состоянии ERROR
+    * или приложение не остановлено по требованию
+    */
     while (signal_num == -1 && getStateType() != StreamStateEnum::Error) {
         try {
             LOGI << "Attempting to start a stream [" << id << "]";
@@ -60,13 +64,11 @@ void axomavis::Capture::run() noexcept {
                 fmt_in.resetContext();
                 std::stringstream ss;
                 ss << "Unable to connect to the video stream [" << id << "]";
-                std::this_thread::sleep_for(std::chrono::seconds(5));
                 throw std::runtime_error(ss.str());
             }
             if (avformat_find_stream_info(fmt_in_ctx, nullptr) < 0) {
                 std::stringstream ss;
                 ss << "Not found info for stream [" << id << "]";
-                std::this_thread::sleep_for(std::chrono::seconds(5));
                 throw std::runtime_error(ss.str());
             }
             auto codec_params_list = fetch_params(fmt_in);
@@ -75,17 +77,32 @@ void axomavis::Capture::run() noexcept {
             axomavis::Archive archive(codec_params_list, id);
             axomavis::AVPkt pkt;
             
+            /*
+            * Соединение прошло успешно, потоки определены выставляем состояние RUNNING
+            */
             set_running_state();
             while (signal_num == -1 && av_read_frame(fmt_in_ctx, pkt.getPacket()) >= 0) {
                 updateTimePoint();
                 archive.send_pkt(pkt, fmt_in);
                 av_packet_unref(pkt.getPacket());
             }
+            /*
+            * Пропало соединен с потоком, ставим состояние PENDING
+            */
             set_pending_state();
             LOGW << "Connection to the stream [" << id << "]" << " is lost";
             std::this_thread::sleep_for(std::chrono::seconds(5));
         } catch (const std::exception & ex) {
             LOGE << ex.what();
+            /*
+            * По какой то причине, но не критической получили исключение ставим состояние PENDING
+            * и попытаемся соединится снова
+            */
+            set_pending_state();
+            /*
+            * Чтобы не было постоянной попытки подсоединения в логах, после каждой ошибки немного ждем
+            */
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
 }

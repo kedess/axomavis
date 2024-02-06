@@ -39,7 +39,7 @@ TEST_F(StateTest, StatePending3) {
 TEST_F(StateTest, StateRunning1) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamRunningState);
     state->set_pending_state(state);
-    ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Running);
+    ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Pending);
 }
 TEST_F(StateTest, StateRunning2) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamRunningState);

@@ -10,7 +10,8 @@ void axomavis::StreamPendingState::set_error_state(std::unique_ptr<StreamState>&
     state.reset(new StreamErrorState(description));
 }
 
-void axomavis::StreamRunningState::set_pending_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
+void axomavis::StreamRunningState::set_pending_state(std::unique_ptr<StreamState>& state) {
+    state.reset(new StreamPendingState);
 }
 void axomavis::StreamRunningState::set_running_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
 }

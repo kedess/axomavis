@@ -2,6 +2,15 @@
 #include <string>
 #include <memory>
 
+/*
+* Граф состояний объекта Capture
+* PENDING -----> RUNNING -----> PENDING
+*   |
+*   |
+*   v
+* ERROR                
+*/
+
 namespace axomavis {
     enum StreamStateEnum {
         Pending,
