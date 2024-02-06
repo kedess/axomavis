@@ -20,49 +20,49 @@ public:
     }
 };
 
-TEST_F(StateTest, StatePending1) {
+TEST_F(StateTest, TransitionPendingToPending) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamPendingState);
     state->set_pending_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Pending);
 }
-TEST_F(StateTest, StatePending2) {
+TEST_F(StateTest, TransitionPendingToRunning) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamPendingState);
     state->set_running_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Running);
 }
-TEST_F(StateTest, StatePending3) {
+TEST_F(StateTest, TransitionPendingToError) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamPendingState);
     state->set_error_state(state, "description");
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Error);
 }
 
-TEST_F(StateTest, StateRunning1) {
+TEST_F(StateTest, TransitionRunningToPending) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamRunningState);
     state->set_pending_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Pending);
 }
-TEST_F(StateTest, StateRunning2) {
+TEST_F(StateTest, TransitionRunningToRunning) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamRunningState);
     state->set_running_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Running);
 }
-TEST_F(StateTest, StateRunning3) {
+TEST_F(StateTest, TransitionRunningToError) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamRunningState);
     state->set_error_state(state, "description");
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Running);
 }
 
-TEST_F(StateTest, StateError1) {
+TEST_F(StateTest, TransitionErrorToPending) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamErrorState("description"));
     state->set_pending_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Error);
 }
-TEST_F(StateTest, StateError2) {
+TEST_F(StateTest, TransitionErrorToRunning) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamErrorState("description"));
     state->set_running_state(state);
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Error);
 }
-TEST_F(StateTest, StateError3) {
+TEST_F(StateTest, TransitionErrorToError) {
     std::unique_ptr<axomavis::StreamState> state(new axomavis::StreamErrorState("description"));
     state->set_error_state(state, "description continue");
     ASSERT_EQ(state->get_type(), axomavis::StreamStateEnum::Error);
