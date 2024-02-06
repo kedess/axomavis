@@ -2,7 +2,6 @@
 #include <assert.h>
 
 void axomavis::StreamPendingState::set_pending_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
-    assert(false);
 }
 void axomavis::StreamPendingState::set_running_state(std::unique_ptr<StreamState>& state) {
     state.reset(new StreamRunningState);
@@ -12,25 +11,19 @@ void axomavis::StreamPendingState::set_error_state(std::unique_ptr<StreamState>&
 }
 
 void axomavis::StreamRunningState::set_pending_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
-    assert(false);
 }
 void axomavis::StreamRunningState::set_running_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
-    assert(false);
 }
 void axomavis::StreamRunningState::set_error_state([[maybe_unused]] std::unique_ptr<StreamState>& state,
                                                    [[maybe_unused]] const char * description) {
-    assert(false);
 }
 
 void axomavis::StreamErrorState::set_pending_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
-    assert(false);
 }
 void axomavis::StreamErrorState::set_running_state([[maybe_unused]] std::unique_ptr<StreamState>& state) {
-    assert(false);
 }
 void axomavis::StreamErrorState::set_error_state([[maybe_unused]] std::unique_ptr<StreamState>& state,
                                                  [[maybe_unused]] const char * description) {
-    assert(false);
 }
 
 axomavis::StreamErrorState::StreamErrorState(const char * description) : description(description){
