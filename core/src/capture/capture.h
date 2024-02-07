@@ -10,6 +10,10 @@ namespace axomavis {
     class Capture {
         public:
             Capture(const char * id, const char * url);
+            Capture(const Capture &p) = delete;
+            Capture& operator=(const Capture&) = delete;
+            Capture(Capture &&p) = default;
+            Capture& operator=(Capture&&) = delete;
             void run() noexcept;
             std::chrono::steady_clock::time_point getTimePoint() const;
             void updateTimePoint();

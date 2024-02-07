@@ -8,6 +8,10 @@ namespace axomavis {
         public:
             Archive(std::vector<AVCodecParameters*> codec_params_list, const char * id);
             ~Archive();
+            Archive(const Archive &p) = delete;
+            Archive& operator=(const Archive&) = delete;
+            Archive(Archive &&p) = delete;
+            Archive& operator=(Archive&&) = delete;
             void recv_pkt(AVPkt & pkt, AVFormatInput & fmt_in);
         private:
             AVFormatOutput * fmt_out = nullptr;
