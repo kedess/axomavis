@@ -44,10 +44,8 @@ int main(/*int argc, char * argv[]*/) {
     std::vector<std::thread> threads;
     std::vector<axomavis::Capture> captures;
 
-    size_t nstreams = 0;
     size_t nstreams_success = 0;
     for (size_t i = 0; i < 1; i++) {
-        nstreams++;
         captures.emplace_back(axomavis::Capture("camera-1", "rtsp://admin:admin@192.168.0.1:554/stream"));
         if (captures.back().getStateType() != axomavis::Error) {
             threads.emplace_back(std::thread(&axomavis::Capture::run, &captures.back())); 
@@ -56,7 +54,7 @@ int main(/*int argc, char * argv[]*/) {
     }
 
     if (nstreams_success) {
-        LOGI << nstreams_success << "/" << nstreams << " cameras will be launched";
+        LOGI << nstreams_success << "/" << axomavis::Capture::numbers << " cameras will be launched";
         
         std::unique_lock<std::mutex> lock(is_stop_app_mutex);
         is_stop_app_cond.wait(lock, []() {

@@ -19,6 +19,8 @@ namespace axomavis {
             StreamStateEnum getStateType() const;
         private:
             std::vector<AVCodecParameters*> fetch_params(axomavis::AVFormatInput & fmt);
+        public:
+            static size_t numbers;
         private:
             std::unique_ptr<StreamState> state = nullptr;
             const char * id;

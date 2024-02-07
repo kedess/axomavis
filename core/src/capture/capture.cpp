@@ -14,7 +14,10 @@ extern "C"{
 
 extern volatile std::sig_atomic_t signal_num;
 
+size_t axomavis::Capture::numbers = 0;
+
 axomavis::Capture::Capture(const char * id, const char * url) : id(id), url(url) {
+    numbers++;
     state.reset(new StreamPendingState);
     if (strlen(id) == 0 || strlen(url) == 0){
         state.reset(new StreamErrorState("Stream id and url cannot be empty. Incorrect stream configuration"));
