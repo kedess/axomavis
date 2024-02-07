@@ -22,8 +22,8 @@ axomavis::Archive::~Archive() {
     }
 }
 
-void axomavis::Archive::recv_pkt(AVPkt & pkt, AVFormatInput & fmt_in) {
-    auto packet = pkt.getPacket();
+void axomavis::Archive::recv_pkt(AVPacketWrapper & pkt, AVFormatInput & fmt_in) {
+    auto packet = pkt.getAVPacket();
     auto is_key = packet->flags & AV_PKT_FLAG_KEY;
     if (is_key == 1 && fmt_out) {
         auto tp = std::chrono::steady_clock::now();

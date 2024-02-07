@@ -5,7 +5,7 @@
 #include <sstream>
 #include <thread>
 #include "../utils/avformat.h"
-#include "../utils/avpkt.h"
+#include "../utils/avpacket.h"
 #include "../archive/archive.h"
 
 extern "C"{
@@ -82,16 +82,17 @@ void axomavis::Capture::run() noexcept {
             LOGI << "The stream has been successfully launched [" << id << "]";
 
             axomavis::Archive archive(codec_params_list, id);
-            axomavis::AVPkt pkt;
+            axomavis::AVPacketWrapper pkt;
             
             /*
             * Соединение прошло успешно, потоки определены выставляем состояние RUNNING
             */
             set_running_state();
-            while (signal_num == -1 && av_read_frame(fmt_in_ctx, pkt.getPacket()) >= 0) {
+            auto av_packet = pkt.getAVPacket();
+            while (signal_num == -1 && av_read_frame(fmt_in_ctx, av_packet) >= 0) {
                 updateTimePoint();
                 archive.recv_pkt(pkt, fmt_in);
-                av_packet_unref(pkt.getPacket());
+                av_packet_unref(av_packet);
             }
             /*
             * Пропало соединен с потоком, ставим состояние PENDING

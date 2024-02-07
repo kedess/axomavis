@@ -6,28 +6,28 @@ extern "C"{
 }
 
 namespace axomavis {
-    class AVPkt {
+    class AVPacketWrapper {
         public:
-            AVPkt() {
+            AVPacketWrapper() {
                 auto ptr = av_packet_alloc();
                 if (ptr == nullptr) {
                     throw std::runtime_error("Failed to create AVPacket");
                 }
                 pkt = ptr;
             }
-            ~AVPkt() {
+            ~AVPacketWrapper() {
                 if (pkt) {
                     av_packet_unref(pkt);
                     av_packet_free(&pkt);
                 }
             }
-            AVPacket * getPacket() {
+            AVPacket * getAVPacket() {
                 return pkt;
             }
-            AVPkt(const AVPkt &p) = delete;
-            AVPkt& operator=(const AVPkt&) = delete;
-            AVPkt(AVPkt &&p) = delete;
-            AVPkt& operator=(AVPkt&&) = delete;
+            AVPacketWrapper(const AVPacketWrapper &p) = delete;
+            AVPacketWrapper& operator=(const AVPacketWrapper&) = delete;
+            AVPacketWrapper(AVPacketWrapper &&p) = delete;
+            AVPacketWrapper& operator=(AVPacketWrapper&&) = delete;
         private:
             AVPacket * pkt = nullptr;
     };

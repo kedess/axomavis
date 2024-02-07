@@ -1,6 +1,6 @@
 #pragma once
 #include "../utils/avformat.h"
-#include "../utils/avpkt.h"
+#include "../utils/avpacket.h"
 #include <chrono>
 
 namespace axomavis {
@@ -12,7 +12,7 @@ namespace axomavis {
             Archive& operator=(const Archive&) = delete;
             Archive(Archive &&p) = delete;
             Archive& operator=(Archive&&) = delete;
-            void recv_pkt(AVPkt & pkt, AVFormatInput & fmt_in);
+            void recv_pkt(AVPacketWrapper & pkt, AVFormatInput & fmt_in);
         private:
             AVFormatOutput * fmt_out = nullptr;
             std::vector<AVCodecParameters*> codec_params_list;
