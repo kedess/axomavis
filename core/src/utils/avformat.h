@@ -20,6 +20,10 @@ namespace axomavis {
                     avformat_free_context(ctx);
                 }
             }
+            AVFormatInput(const AVFormatInput &p) = delete;
+            AVFormatInput& operator=(const AVFormatInput&) = delete;
+            AVFormatInput(AVFormatInput &&p) = delete;
+            AVFormatInput& operator=(AVFormatInput&&) = delete;
             AVFormatContext * getContext() {
                 return ctx;
             }
@@ -67,6 +71,10 @@ namespace axomavis {
                     avformat_free_context(ctx);
                 }
             }
+            AVFormatOutput(const AVFormatOutput &p) = delete;
+            AVFormatOutput& operator=(const AVFormatOutput&) = delete;
+            AVFormatOutput(AVFormatOutput &&p) = delete;
+            AVFormatOutput& operator=(AVFormatOutput&&) = delete;
             AVFormatContext * getContext() {
                 return ctx;
             }

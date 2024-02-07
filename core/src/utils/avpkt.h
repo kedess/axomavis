@@ -24,6 +24,10 @@ namespace axomavis {
             AVPacket * getPacket() {
                 return pkt;
             }
+            AVPkt(const AVPkt &p) = delete;
+            AVPkt& operator=(const AVPkt&) = delete;
+            AVPkt(AVPkt &&p) = delete;
+            AVPkt& operator=(AVPkt&&) = delete;
         private:
             AVPacket * pkt = nullptr;
     };
