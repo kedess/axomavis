@@ -16,10 +16,10 @@ extern volatile std::sig_atomic_t signal_num;
 
 size_t axomavis::Capture::numbers = 0;
 
-axomavis::Capture::Capture(const char * id, const char * url) : id(id), url(url) {
+axomavis::Capture::Capture(axomavis::Source source): source(source) {
     numbers++;
     state.reset(new StreamPendingState);
-    if (strlen(id) == 0 || strlen(url) == 0){
+    if (this->source.getId().size() == 0 || this->source.getUrl().size() == 0){
         state.reset(new StreamErrorState("Stream id and url cannot be empty. Incorrect stream configuration"));
     }
 }
@@ -52,7 +52,7 @@ void axomavis::Capture::run() noexcept {
     */
     while (signal_num == -1 && getStateType() != StreamStateEnum::Error) {
         try {
-            LOGI << "Attempting to start a stream [" << id << "]";
+            LOGI << "Attempting to start a stream [" << source.getId() << "]";
             updateTimePoint();
             AVFormatInput fmt_in;
             auto fmt_in_ctx = fmt_in.getContext();
@@ -63,25 +63,25 @@ void axomavis::Capture::run() noexcept {
             AVIOInterruptCB icb= {check_latency_read_packet,reinterpret_cast<void*>(this)};
             fmt_in_ctx->interrupt_callback = icb;
             fmt_in_ctx->interrupt_callback.opaque = this;
-            if (avformat_open_input(&fmt_in_ctx, url, nullptr, nullptr) < 0) {
+            if (avformat_open_input(&fmt_in_ctx, source.getUrl().c_str(), nullptr, nullptr) < 0) {
                 /*
                 * Обнуляем обязательно указатель, так как в случаи сбоя avformat_open_input,
                 * функция очищает данные указателя fmt_in_ctx
                 */
                 fmt_in.resetContext();
                 std::stringstream ss;
-                ss << "Unable to connect to the video stream [" << id << "]";
+                ss << "Unable to connect to the video stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
             }
             if (avformat_find_stream_info(fmt_in_ctx, nullptr) < 0) {
                 std::stringstream ss;
-                ss << "Not found info for stream [" << id << "]";
+                ss << "Not found info for stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
             }
             auto codec_params_list = fetch_params(fmt_in);
-            LOGI << "The stream has been successfully launched [" << id << "]";
+            LOGI << "The stream has been successfully launched [" << source.getId() << "]";
 
-            axomavis::Archive archive(codec_params_list, id);
+            axomavis::Archive archive(codec_params_list, source.getId().c_str());
             axomavis::AVPacketWrapper pkt;
             
             /*
@@ -99,7 +99,7 @@ void axomavis::Capture::run() noexcept {
             */
             if (signal_num == -1) {
                 set_pending_state();
-                LOGW << "Connection to the stream [" << id << "]" << " is lost";
+                LOGW << "Connection to the stream [" << source.getId() << "]" << " is lost";
                 std::this_thread::sleep_for(std::chrono::seconds(5));
             }
         } catch (const std::exception & ex) {
@@ -126,7 +126,7 @@ std::vector<AVCodecParameters *> axomavis::Capture::fetch_params(axomavis::AVFor
         if (media_type == AVMediaType::AVMEDIA_TYPE_VIDEO) {
             std::stringstream ss;
             ss
-            << "Video stream: [" << id << "]"
+            << "Video stream: [" << source.getId() << "]"
             << ", width: " << codec_params->width
             << ", height: " << codec_params->height
             << ", codec: " << avcodec_get_name(codec_params->codec_id);
@@ -137,7 +137,7 @@ std::vector<AVCodecParameters *> axomavis::Capture::fetch_params(axomavis::AVFor
         if (media_type == AVMediaType::AVMEDIA_TYPE_AUDIO) {
             std::stringstream ss;
             ss
-            << "Audio stream: " << id
+            << "Audio stream: " << source.getId()
             << ", codec: " << avcodec_get_name(codec_params->codec_id);
             LOGI << ss.str();
             audio_stream_index = static_cast<int>(idx);

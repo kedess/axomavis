@@ -9,7 +9,7 @@ extern "C"{
     #include <libavutil/mathematics.h>
 }
 
-axomavis::Archive::Archive(std::vector<AVCodecParameters*> codec_params_list, const char * id) 
+axomavis::Archive::Archive(std::vector<AVCodecParameters*> codec_params_list, const std::string & id) 
 : codec_params_list(codec_params_list) {
     std::stringstream path;
     path << "/tmp/axomavis/" << id << "/";

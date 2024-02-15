@@ -2,6 +2,7 @@
 
 #include "../utils/avformat.h"
 #include "../state/state.h"
+#include "../source/source.h"
 #include <vector>
 #include <chrono>
 #include <memory>
@@ -9,11 +10,11 @@
 namespace axomavis {
     class Capture {
         public:
-            Capture(const char * id, const char * url);
+            Capture(Source source);
             Capture(const Capture &p) = delete;
             Capture& operator=(const Capture&) = delete;
             Capture(Capture &&p) = default;
-            Capture& operator=(Capture&&) = delete;
+            Capture& operator=(Capture&&) = default;
             void run() noexcept;
             std::chrono::steady_clock::time_point getTimePoint() const;
             void updateTimePoint();
@@ -27,8 +28,7 @@ namespace axomavis {
             static size_t numbers;
         private:
             std::unique_ptr<StreamState> state = nullptr;
-            const char * id;
-            const char * url;
+            Source source;
             int video_stream_index = -1;
             int audio_stream_index = -1;
             std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();

@@ -6,7 +6,7 @@
 namespace axomavis {
     class Archive {
         public:
-            Archive(std::vector<AVCodecParameters*> codec_params_list, const char * id);
+            Archive(std::vector<AVCodecParameters*> codec_params_list, const std::string & id);
             ~Archive();
             Archive(const Archive &p) = delete;
             Archive& operator=(const Archive&) = delete;

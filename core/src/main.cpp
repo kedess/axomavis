@@ -15,6 +15,10 @@ extern "C"{
 
 #include "version.h"
 #include "capture/capture.h"
+#include <nlohmann/json.hpp>
+
+#include "source/source.h"
+using json = nlohmann::json;
 
 std::condition_variable is_stop_app_cond;
 std::mutex is_stop_app_mutex;
@@ -42,14 +46,14 @@ int main(/*int argc, char * argv[]*/) {
     av_log_set_level(AV_LOG_QUIET);
 
     std::vector<std::thread> threads;
-    std::vector<axomavis::Capture> captures;
+    std::vector<axomavis::Source> sources = axomavis::Source::from_file("/home/amazing-hash/sources.json");
 
     size_t nstreams_success = 0;
-    for (size_t i = 0; i < 1; i++) {
-        captures.emplace_back(axomavis::Capture("camera-1", "rtsp://admin:admin@192.168.0.1:554/stream"));
-        if (captures.back().getStateType() != axomavis::Error) {
-            threads.emplace_back(std::thread(&axomavis::Capture::run, &captures.back())); 
+    for (auto source : sources) {
+        axomavis::Capture capture (source);
+        if (capture.getStateType() != axomavis::Error) {
             nstreams_success++;
+            threads.emplace_back(std::thread(&axomavis::Capture::run, std::move(capture))); 
         }
     }
 
