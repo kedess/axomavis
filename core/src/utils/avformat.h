@@ -1,10 +1,12 @@
 #pragma once
 
 #include <stdexcept>
+#include <vector>
+#include <sstream>
 extern "C"{
     #include <libavformat/avformat.h>
 }
-#include <plog/Log.h>
+
 namespace axomavis {
     class AVFormatInput{
         public:
