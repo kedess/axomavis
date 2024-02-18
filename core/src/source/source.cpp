@@ -23,7 +23,7 @@ namespace axomavis {
         json j_complete = json::parse(sstr.str());
         std::vector<Source> sources;
         for (auto value : j_complete) {
-            sources.emplace_back(Source::from_json(value));
+            sources.push_back(Source::from_json(value));
         }
         return sources;
     }

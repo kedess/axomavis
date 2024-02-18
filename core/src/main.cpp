@@ -53,7 +53,7 @@ int main(/*int argc, char * argv[]*/) {
         axomavis::Capture capture (source);
         if (capture.getStateType() != axomavis::Error) {
             nstreams_success++;
-            threads.emplace_back(std::thread(&axomavis::Capture::run, std::move(capture))); 
+            threads.emplace_back(&axomavis::Capture::run, std::move(capture)); 
         }
     }
 
