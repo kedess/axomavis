@@ -37,7 +37,7 @@ namespace axomavis {
     };
     class AVFormatOutput{
         public:
-            AVFormatOutput(const char * filename, std::vector<AVCodecParameters*> & codec_params_list){
+            AVFormatOutput(const char * filename, std::vector<const AVCodecParameters*> & codec_params_list){
                 if (avformat_alloc_output_context2(&ctx, nullptr, nullptr, filename) < 0){
                     throw std::runtime_error("Failed to create AVFormatContext");
                 }

@@ -7,6 +7,8 @@
 #include <chrono>
 #include <memory>
 
+struct CodecParams;
+
 namespace axomavis {
     class Capture {
         public:
@@ -23,14 +25,12 @@ namespace axomavis {
             void set_error_state(const char * description);
             StreamStateEnum getStateType() const;
         private:
-            std::vector<AVCodecParameters*> fetch_params(axomavis::AVFormatInput & fmt);
+            std::vector<CodecParams> fetch_params(axomavis::AVFormatInput & fmt);
         public:
             static size_t numbers;
         private:
             std::unique_ptr<StreamState> state = nullptr;
             Source source;
-            int video_stream_index = -1;
-            int audio_stream_index = -1;
             std::chrono::steady_clock::time_point time_point = std::chrono::steady_clock::now();
     };
 }
