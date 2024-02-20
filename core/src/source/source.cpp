@@ -3,10 +3,10 @@
 #include <fstream>
 
 namespace axomavis {
-    const std::string & Source::getId() const {
+    const std::string & Source::getId() const & {
         return id;
     }
-    const std::string & Source::getUrl() const {
+    const std::string & Source::getUrl() const & {
         return url;
     }
     Source::Source(std::string id, std::string url) : id(id), url(url){

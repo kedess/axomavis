@@ -14,8 +14,8 @@ namespace axomavis {
             Source& operator=(const Source&) = default;
             Source(Source &&p) = default;
             Source& operator=(Source&&) = default;
-            const std::string & getId() const;
-            const std::string & getUrl() const;
+            const std::string & getId() const &;
+            const std::string & getUrl() const &;
         private:
             std::string id;
             std::string url;
