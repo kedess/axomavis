@@ -7,8 +7,6 @@
 #include <chrono>
 #include <memory>
 
-struct CodecParams;
-
 namespace axomavis {
     class Capture {
         public:
@@ -25,7 +23,7 @@ namespace axomavis {
             void set_error_state(const char * description);
             StreamStateEnum getStateType() const;
         private:
-            std::vector<CodecParams> fetch_params(axomavis::AVFormatInput & fmt);
+            std::vector<const AVCodecParameters *> fetch_input_stream_params(axomavis::AVFormatInput & fmt);
         public:
             static size_t numbers;
         private:

@@ -18,5 +18,6 @@ namespace axomavis {
             std::vector<const AVCodecParameters*> codec_params_list;
             std::chrono::steady_clock::time_point time_point;
             std::string prefix_path;
+            std::string filename;
     };
 }

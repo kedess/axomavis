@@ -8,6 +8,9 @@
 #include <plog/Initializers/ConsoleInitializer.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Formatters/TxtFormatter.h>
+#include <deque>
+
+using namespace std::chrono_literals;
 
 extern "C"{
     #include <libavdevice/avdevice.h>
@@ -15,6 +18,7 @@ extern "C"{
 
 #include "version.h"
 #include "capture/capture.h"
+#include "processing/processing.h"
 #include <nlohmann/json.hpp>
 
 #include "source/source.h"
@@ -22,6 +26,13 @@ using json = nlohmann::json;
 
 std::condition_variable is_stop_app_cond;
 std::mutex is_stop_app_mutex;
+
+/*
+* Очередь сохраненных видео файлов, которые пойдут на видео аналитику
+*/
+std::mutex queue_video_files_mutex;
+std::condition_variable queue_video_files_cond;
+std::deque<std::string> queue_video_files;
 
 volatile std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
@@ -44,6 +55,29 @@ int main(/*int argc, char * argv[]*/) {
     avdevice_register_all();
     avformat_network_init();
     av_log_set_level(AV_LOG_QUIET);
+
+    std::thread processing_thread([](){
+        while (signal_num == -1) {
+            auto now = std::chrono::steady_clock::now();
+            std::unique_lock<std::mutex> lock(queue_video_files_mutex);
+            queue_video_files_cond.wait_until(lock, now + 5s);
+            if (!queue_video_files.empty()) {
+                auto filename = queue_video_files.front();
+                queue_video_files.pop_front();
+                lock.unlock();
+
+                LOGD << "Started processing file [" << filename << "]";
+                /*
+                * Обработка видео файла
+                */
+                try {
+                    axomavis::Processing processing(filename.c_str());
+                } catch (const std::exception & ex) {
+                    LOGE << ex.what();
+                }
+            }
+        }
+    });
 
     std::vector<std::thread> threads;
     std::vector<axomavis::Source> sources = axomavis::Source::from_file("/home/amazing-hash/sources.json");
@@ -72,6 +106,9 @@ int main(/*int argc, char * argv[]*/) {
         }
     } else {
         LOGI << "There are no cameras to launch";
+    }
+    if (processing_thread.joinable()){
+        processing_thread.join();
     }
 
     LOGI << "Finished app Axomavis";

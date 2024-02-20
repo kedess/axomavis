@@ -35,6 +35,7 @@ set(SRC_FILES
     src/state/state.cpp
     src/source/source.cpp
     src/decoder/decoder.cpp
+    src/processing/processing.cpp
 )
 
 include_directories(${FFMPEG_INCLUDE_DIRS})

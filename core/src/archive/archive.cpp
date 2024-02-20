@@ -1,5 +1,8 @@
 #include "archive.h"
 #include <filesystem>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
 
 const int64_t MAX_DURATION_ARCH_FILE_SECS = 60;
 
@@ -8,6 +11,9 @@ namespace fs = std::filesystem;
 extern "C"{
     #include <libavutil/mathematics.h>
 }
+extern std::mutex queue_video_files_mutex;
+extern std::condition_variable queue_video_files_cond;
+extern std::deque<std::string> queue_video_files;
 
 axomavis::Archive::Archive(std::vector<const AVCodecParameters*> codec_params_list, const std::string & id) 
 : codec_params_list(codec_params_list) {
@@ -19,6 +25,9 @@ axomavis::Archive::Archive(std::vector<const AVCodecParameters*> codec_params_li
 axomavis::Archive::~Archive() {
     if(fmt_out) {
         delete fmt_out;
+        std::unique_lock<std::mutex> guard(queue_video_files_mutex);
+        queue_video_files.push_back(filename);
+        queue_video_files_cond.notify_one();
     }
 }
 
@@ -30,15 +39,19 @@ void axomavis::Archive::recv_pkt(AVPacketWrapper & pkt, AVFormatInput & fmt_in) 
         if (std::chrono::duration_cast<std::chrono::seconds>(tp - time_point).count() > MAX_DURATION_ARCH_FILE_SECS) {
             delete fmt_out;
             fmt_out = nullptr;
+            std::unique_lock<std::mutex> guard(queue_video_files_mutex);
+            queue_video_files.push_back(filename);
+            queue_video_files_cond.notify_one();
         }
     }
     if (!fmt_out) {
         time_point = std::chrono::steady_clock::now();
         const auto tp = std::chrono::system_clock::now();
-        std::stringstream filename;
-        filename << prefix_path
+        std::stringstream path;
+        path << prefix_path
                  << std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count() << ".ts";
-        fmt_out = new AVFormatOutput(filename.str().c_str(), codec_params_list);
+        filename = path.str();
+        fmt_out = new AVFormatOutput(filename.c_str(), codec_params_list);
     }
 
     auto idx = packet->stream_index;

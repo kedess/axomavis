@@ -7,19 +7,10 @@
 #include "../utils/avformat.h"
 #include "../utils/avpacket.h"
 #include "../archive/archive.h"
-#include "../decoder/decoder.h"
 
 extern "C"{
     #include <libavformat/avformat.h>
 }
-
-struct CodecParams {
-    int index;
-    AVCodecID id;
-    const AVCodec * codec;
-    const AVCodecParameters * codec_params_list;
-    bool is_video_stream;
-};
 
 extern volatile std::sig_atomic_t signal_num;
 
@@ -87,26 +78,10 @@ void axomavis::Capture::run() noexcept {
                 ss << "Not found info for stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
             }
-            auto params_list = fetch_params(fmt_in);
+            auto params_list = fetch_input_stream_params(fmt_in);
             LOGI << "The stream has been successfully launched [" << source.getId() << "]";
 
-            /*
-            * Параметры для инициализация декодера
-            */
-            const AVCodec * video_codec = nullptr;
-            int video_stream_index = -1;
-            const AVCodecParameters * video_codec_params = nullptr;
-
-            std::vector<const AVCodecParameters *> codec_params_list;
-            for(auto & codec_params: params_list) {
-                if (codec_params.is_video_stream) {
-                    video_codec = codec_params.codec;
-                    video_stream_index = codec_params.index;
-                    video_codec_params = codec_params.codec_params_list;
-                }
-                codec_params_list.push_back(codec_params.codec_params_list);
-            }
-            axomavis::Archive archive(codec_params_list, source.getId().c_str());
+            axomavis::Archive archive(params_list, source.getId().c_str());
             axomavis::AVPacketWrapper packet;
             
             /*
@@ -114,34 +89,8 @@ void axomavis::Capture::run() noexcept {
             */
             set_running_state();
             auto av_packet = packet.getAVPacket();
-            if (!video_codec || !video_codec_params) {
-                throw std::runtime_error("No initializers found for the video codec");
-            }
-            Decoder decoder(video_codec, video_codec_params);
             while (signal_num == -1 && av_read_frame(fmt_in_ctx, av_packet) == 0) {
                 updateTimePoint();
-                if (av_packet->stream_index == video_stream_index) {
-                    switch (*(video_codec->pix_fmts)) {
-                        case AVPixelFormat::AV_PIX_FMT_CUDA: {
-                            auto frame_decoded = decoder.decode_gpu(packet);
-                            if (frame_decoded.has_value()) {
-                                LOGD << "Decoded frame gpu";
-                            }
-                            break;
-                        }
-                        case AVPixelFormat::AV_PIX_FMT_YUV420P: {
-                            auto frame_decoded = decoder.decode_cpu(packet);
-                            if (frame_decoded.has_value()) {
-                                LOGD << "Decoded frame cpu";
-                            }
-                            break;
-                        }
-                        default:{
-                            throw std::runtime_error("Not supported Pixel Format");
-                            break;
-                        }
-                    }
-                }
                 archive.recv_pkt(packet, fmt_in);
                 av_packet_unref(av_packet);
             }
@@ -168,8 +117,8 @@ void axomavis::Capture::run() noexcept {
     }
 }
 
-std::vector<CodecParams> axomavis::Capture::fetch_params(axomavis::AVFormatInput & fmt_in) {
-    std::vector<CodecParams> codec_params_list;
+std::vector<const AVCodecParameters *> axomavis::Capture::fetch_input_stream_params(axomavis::AVFormatInput & fmt_in) {
+    std::vector<const AVCodecParameters*> params_list;
     auto fmt_in_ctx = fmt_in.getContext();
     for (size_t idx = 0; idx < fmt_in_ctx->nb_streams; idx++) {
         auto codec_params = fmt_in_ctx->streams[idx]->codecpar;
@@ -189,9 +138,7 @@ std::vector<CodecParams> axomavis::Capture::fetch_params(axomavis::AVFormatInput
                     for(auto name : names) {
                         codec = avcodec_find_decoder_by_name(name);
                         if (codec) {
-                            codec_params_list.push_back(
-                                CodecParams{static_cast<int>(idx), AVCodecID::AV_CODEC_ID_H264, codec, codec_params, true}
-                            );
+                            params_list.push_back(codec_params);
                             break;
                         }
                     }
@@ -208,9 +155,7 @@ std::vector<CodecParams> axomavis::Capture::fetch_params(axomavis::AVFormatInput
                     for(auto name : names) {
                         codec = avcodec_find_decoder_by_name(name);
                         if (codec) {
-                            codec_params_list.push_back(
-                                CodecParams{static_cast<int>(idx), AVCodecID::AV_CODEC_ID_HEVC, codec, codec_params, true}
-                            );
+                            params_list.push_back(codec_params);
                             break;
                         }
                     }
@@ -234,12 +179,10 @@ std::vector<CodecParams> axomavis::Capture::fetch_params(axomavis::AVFormatInput
             << "Audio stream: " << source.getId()
             << ", codec: " << avcodec_get_name(codec_params->codec_id);
             LOGI << ss.str();
-            codec_params_list.push_back(
-                CodecParams{static_cast<int>(idx), codec_params->codec_id, nullptr, codec_params, false}
-            );
+            params_list.push_back(codec_params);
         }
     }
-    return codec_params_list;
+    return params_list;
 }
 void axomavis::Capture::set_pending_state() {
     state->set_pending_state(state);
