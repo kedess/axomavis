@@ -34,8 +34,7 @@ namespace axomavis {
             AVDecodeWrapper(const AVDecodeWrapper &p) = delete;
             AVDecodeWrapper& operator=(const AVDecodeWrapper&) = delete;
             AVDecodeWrapper(AVDecodeWrapper &&p) {
-                ctx = p.ctx;
-                p.ctx = nullptr;
+                std::swap(ctx, p.ctx);
             }
             AVDecodeWrapper& operator=(AVDecodeWrapper&&) = delete;
             const char * getName() const {
@@ -64,8 +63,7 @@ namespace axomavis {
             AVEncodeWrapper(const AVEncodeWrapper &p) = delete;
             AVEncodeWrapper& operator=(const AVEncodeWrapper&) = delete;
             AVEncodeWrapper(AVEncodeWrapper &&p) {
-                ctx = p.ctx;
-                p.ctx = nullptr;
+                std::swap(ctx, p.ctx);
             }
             AVEncodeWrapper& operator=(AVEncodeWrapper&&) = delete;
             const char * getName() const {
