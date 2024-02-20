@@ -31,8 +31,7 @@ axomavis::Archive::~Archive() {
     }
 }
 
-void axomavis::Archive::recv_pkt(AVPacketWrapper & pkt, AVFormatInput & fmt_in) {
-    auto packet = pkt.getAVPacket();
+void axomavis::Archive::recv_pkt(AVPacketWrapper & packet, AVFormatInput & fmt_in) {
     auto is_key = packet->flags & AV_PKT_FLAG_KEY;
     if (is_key == 1 && fmt_out) {
         auto tp = std::chrono::steady_clock::now();
@@ -55,11 +54,11 @@ void axomavis::Archive::recv_pkt(AVPacketWrapper & pkt, AVFormatInput & fmt_in) 
     }
 
     auto idx = packet->stream_index;
-    auto in_stream = fmt_in.getContext()->streams[idx];
-    auto out_stream = fmt_out->getContext()->streams[idx];
+    auto in_stream = fmt_in->streams[idx];
+    auto out_stream = (*fmt_out)->streams[idx];
     packet->pts = av_rescale_q_rnd(packet->pts, in_stream->time_base, out_stream->time_base, AV_ROUND_NEAR_INF);
     packet->dts = av_rescale_q_rnd(packet->dts, in_stream->time_base, out_stream->time_base, AV_ROUND_NEAR_INF);
     packet->duration = av_rescale_q(packet->duration, in_stream->time_base, out_stream->time_base);
     packet->pos = -1;
-    av_interleaved_write_frame(fmt_out->getContext(), packet);
+    av_interleaved_write_frame((*fmt_out).get(), packet.get());
 }

@@ -26,11 +26,11 @@ namespace axomavis {
             AVFormatInput& operator=(const AVFormatInput&) = delete;
             AVFormatInput(AVFormatInput &&p) = delete;
             AVFormatInput& operator=(AVFormatInput&&) = delete;
-            AVFormatContext * getContext() {
+            AVFormatContext * get() {
                 return ctx;
             }
-            void resetContext() {
-                ctx = nullptr;
+            AVFormatContext * operator->() {
+                return ctx;
             }
         private:
             AVFormatContext * ctx = nullptr;
@@ -77,7 +77,10 @@ namespace axomavis {
             AVFormatOutput& operator=(const AVFormatOutput&) = delete;
             AVFormatOutput(AVFormatOutput &&p) = delete;
             AVFormatOutput& operator=(AVFormatOutput&&) = delete;
-            AVFormatContext * getContext() {
+            AVFormatContext * get() {
+                return ctx;
+            }
+            AVFormatContext * operator->() {
                 return ctx;
             }
         private:

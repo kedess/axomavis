@@ -24,7 +24,10 @@ namespace axomavis {
                 std::swap(ptr, p.ptr);
             }
             AVFrameWrapper& operator=(AVFrameWrapper&&) = delete;
-            AVFrame * getAVFrame() {
+            AVFrame * get() {
+                return ptr;
+            }
+            AVFrame * operator->() {
                 return ptr;
             }
         private:

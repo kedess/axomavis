@@ -55,25 +55,25 @@ void axomavis::Capture::run() noexcept {
             LOGI << "Attempting to start a stream [" << source.getId() << "]";
             updateTimePoint();
             AVFormatInput fmt_in;
-            auto fmt_in_ctx = fmt_in.getContext();
             /*
             * Функция следит за временем задержки получения пакетов из потока,
             * используя переменную time_point
             */
             AVIOInterruptCB icb= {check_latency_read_packet,reinterpret_cast<void*>(this)};
-            fmt_in_ctx->interrupt_callback = icb;
-            fmt_in_ctx->interrupt_callback.opaque = this;
-            if (avformat_open_input(&fmt_in_ctx, source.getUrl().c_str(), nullptr, nullptr) < 0) {
+            fmt_in->interrupt_callback = icb;
+            fmt_in->interrupt_callback.opaque = this;
+            auto ptr = fmt_in.get();
+            if (avformat_open_input(&ptr, source.getUrl().c_str(), nullptr, nullptr) < 0) {
                 /*
                 * Обнуляем обязательно указатель, так как в случаи сбоя avformat_open_input,
-                * функция очищает данные указателя fmt_in_ctx
+                * функция очищает данные указателя fmt_in
                 */
-                fmt_in.resetContext();
+                ptr = nullptr;
                 std::stringstream ss;
                 ss << "Unable to connect to the video stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
             }
-            if (avformat_find_stream_info(fmt_in_ctx, nullptr) < 0) {
+            if (avformat_find_stream_info(fmt_in.get(), nullptr) < 0) {
                 std::stringstream ss;
                 ss << "Not found info for stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
@@ -88,11 +88,10 @@ void axomavis::Capture::run() noexcept {
             * Соединение прошло успешно, потоки определены выставляем состояние RUNNING
             */
             set_running_state();
-            auto av_packet = packet.getAVPacket();
-            while (signal_num == -1 && av_read_frame(fmt_in_ctx, av_packet) == 0) {
+            while (signal_num == -1 && av_read_frame(fmt_in.get(), packet.get()) == 0) {
                 updateTimePoint();
                 archive.recv_pkt(packet, fmt_in);
-                av_packet_unref(av_packet);
+                av_packet_unref(packet.get());
             }
             /*
             * Пропало соединен с потоком, ставим состояние PENDING
@@ -119,9 +118,8 @@ void axomavis::Capture::run() noexcept {
 
 std::vector<const AVCodecParameters *> axomavis::Capture::fetch_input_stream_params(axomavis::AVFormatInput & fmt_in) {
     std::vector<const AVCodecParameters*> params_list;
-    auto fmt_in_ctx = fmt_in.getContext();
-    for (size_t idx = 0; idx < fmt_in_ctx->nb_streams; idx++) {
-        auto codec_params = fmt_in_ctx->streams[idx]->codecpar;
+    for (size_t idx = 0; idx < fmt_in->nb_streams; idx++) {
+        auto codec_params = fmt_in->streams[idx]->codecpar;
         auto media_type = codec_params->codec_type;
         if (media_type == AVMediaType::AVMEDIA_TYPE_VIDEO) {
             std::stringstream ss;

@@ -10,9 +10,8 @@ struct VideoCodecParams {
 };
 
 static const VideoCodecParams fetch_video_codec_params(axomavis::AVFormatInput & fmt_in, const char * input_filename) {
-    auto fmt_in_ctx = fmt_in.getContext();
-    for (int idx = 0; idx < static_cast<int>(fmt_in_ctx->nb_streams); idx++) {
-        auto codec_params = fmt_in_ctx->streams[idx]->codecpar;
+    for (int idx = 0; idx < static_cast<int>(fmt_in->nb_streams); idx++) {
+        auto codec_params = fmt_in->streams[idx]->codecpar;
         auto media_type = codec_params->codec_type;
         if (media_type == AVMediaType::AVMEDIA_TYPE_VIDEO) {
             switch (codec_params->codec_id) {
@@ -57,18 +56,18 @@ static const VideoCodecParams fetch_video_codec_params(axomavis::AVFormatInput &
 namespace axomavis {
     Processing::Processing(const char * input_filename){
         AVFormatInput fmt_in;
-        auto fmt_in_ctx = fmt_in.getContext();
-        if (avformat_open_input(&fmt_in_ctx, input_filename, nullptr, nullptr) < 0) {
+        auto ptr = fmt_in.get();
+        if (avformat_open_input(&ptr, input_filename, nullptr, nullptr) < 0) {
             /*
             * Обнуляем обязательно указатель, так как в случаи сбоя avformat_open_input,
             * функция очищает данные указателя fmt_in_ctx
             */
-            fmt_in.resetContext();
+            ptr = nullptr;
             std::stringstream ss;
             ss << "Unable to read video file [" << input_filename << "]";
             throw std::runtime_error(ss.str());
         }
-        if (avformat_find_stream_info(fmt_in_ctx, nullptr) < 0) {
+        if (avformat_find_stream_info(fmt_in.get(), nullptr) < 0) {
             std::stringstream ss;
             ss << "Not found info for stream file [" << input_filename << "]";
             throw std::runtime_error(ss.str());
@@ -81,10 +80,9 @@ namespace axomavis {
             throw std::runtime_error(ss.str());
         }
         AVPacketWrapper packet;
-        auto av_packet = packet.getAVPacket();
         Decoder decoder(video_codec, codec_params);
-        while (av_read_frame(fmt_in_ctx, av_packet) == 0) {
-            if (av_packet->stream_index == video_index) {
+        while (av_read_frame(fmt_in.get(), packet.get()) == 0) {
+            if (packet->stream_index == video_index) {
                 switch (*(video_codec->pix_fmts)) {
                     case AVPixelFormat::AV_PIX_FMT_CUDA: {
                         auto frame_decoded = decoder.decode_gpu(packet);
@@ -104,7 +102,7 @@ namespace axomavis {
                     }
                 }
             }
-            av_packet_unref(av_packet);
+            av_packet_unref(packet.get());
         }
     }
 }

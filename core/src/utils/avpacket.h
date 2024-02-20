@@ -21,13 +21,16 @@ namespace axomavis {
                     av_packet_free(&pkt);
                 }
             }
-            AVPacket * getAVPacket() {
-                return pkt;
-            }
             AVPacketWrapper(const AVPacketWrapper &p) = delete;
             AVPacketWrapper& operator=(const AVPacketWrapper&) = delete;
             AVPacketWrapper(AVPacketWrapper &&p) = delete;
             AVPacketWrapper& operator=(AVPacketWrapper&&) = delete;
+            AVPacket * get() {
+                return pkt;
+            }
+            AVPacket * operator->() {
+                return pkt;
+            }
         private:
             AVPacket * pkt = nullptr;
     };

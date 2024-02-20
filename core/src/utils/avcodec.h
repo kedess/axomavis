@@ -28,17 +28,17 @@ namespace axomavis {
                     avcodec_free_context(&ctx);
                 }
             }
-            AVCodecContext* getContext() {
-                return ctx;
-            }
             AVDecodeWrapper(const AVDecodeWrapper &p) = delete;
             AVDecodeWrapper& operator=(const AVDecodeWrapper&) = delete;
             AVDecodeWrapper(AVDecodeWrapper &&p) {
                 std::swap(ctx, p.ctx);
             }
             AVDecodeWrapper& operator=(AVDecodeWrapper&&) = delete;
-            const char * getName() const {
-                return ctx->codec->name;
+            AVCodecContext * get() {
+                return ctx;
+            }
+            AVCodecContext * operator->() {
+                return ctx;
             }
         private:
             AVCodecContext * ctx = nullptr;
@@ -57,20 +57,17 @@ namespace axomavis {
                     avcodec_free_context(&ctx);
                 }
             }
-            AVCodecContext* getContext() {
-                return ctx;
-            }
             AVEncodeWrapper(const AVEncodeWrapper &p) = delete;
             AVEncodeWrapper& operator=(const AVEncodeWrapper&) = delete;
             AVEncodeWrapper(AVEncodeWrapper &&p) {
                 std::swap(ctx, p.ctx);
             }
             AVEncodeWrapper& operator=(AVEncodeWrapper&&) = delete;
-            const char * getName() const {
-                return ctx->codec->name;
+            AVCodecContext * get() {
+                return ctx;
             }
-            const AVPixelFormat * getPixFmt() const {
-                return ctx->codec->pix_fmts;
+            AVCodecContext * operator->() {
+                return ctx;
             }
         private:
             AVCodecContext * ctx = nullptr;
