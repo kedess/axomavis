@@ -32,6 +32,9 @@ namespace axomavis {
             AVFormatContext * operator->() {
                 return ctx;
             }
+            void resetContext(){
+                ctx = nullptr;
+            }
         private:
             AVFormatContext * ctx = nullptr;
     };

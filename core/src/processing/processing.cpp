@@ -62,7 +62,7 @@ namespace axomavis {
             * Обнуляем обязательно указатель, так как в случаи сбоя avformat_open_input,
             * функция очищает данные указателя fmt_in_ctx
             */
-            ptr = nullptr;
+            fmt_in.resetContext();
             std::stringstream ss;
             ss << "Unable to read video file [" << input_filename << "]";
             throw std::runtime_error(ss.str());

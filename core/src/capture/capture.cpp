@@ -68,7 +68,7 @@ void axomavis::Capture::run() noexcept {
                 * Обнуляем обязательно указатель, так как в случаи сбоя avformat_open_input,
                 * функция очищает данные указателя fmt_in
                 */
-                ptr = nullptr;
+                fmt_in.resetContext();
                 std::stringstream ss;
                 ss << "Unable to connect to the video stream [" << source.getId() << "]";
                 throw std::runtime_error(ss.str());
