@@ -24,20 +24,19 @@ namespace axomavis {
     std::optional<AVFrameWrapper> Decoder::decode_gpu(AVPacketWrapper &packet) {
         AVFrameWrapper frame;
         AVFrameWrapper sw_frame;
-        auto ctx = decodec_wrapper.get();
-        auto res = avcodec_receive_frame(ctx, frame.get());
+        auto res = avcodec_receive_frame(decodec_wrapper.get(), frame.get());
         if (res == 0) {
             return std::nullopt;
         }
         auto repeat = true;
         while (repeat) {
-            auto res = avcodec_send_packet(ctx, packet.get());
+            auto res = avcodec_send_packet(decodec_wrapper.get(), packet.get());
             if (res == 0) {
                 repeat = false;
             } else if (res != AVERROR(EAGAIN)) {
                 return std::nullopt;
             }
-            res = avcodec_receive_frame(ctx, frame.get());
+            res = avcodec_receive_frame(decodec_wrapper.get(), frame.get());
             if (res == 0) {
                 if(av_hwframe_transfer_data(sw_frame.get(), frame.get(), 0) == 0) {
                     sw_frame->pts = packet->pts;
