@@ -31,6 +31,6 @@ namespace axomavis {
                 return ptr;
             }
         private:
-            AVFrame * ptr;
+            AVFrame * ptr = nullptr;
     };
 }
