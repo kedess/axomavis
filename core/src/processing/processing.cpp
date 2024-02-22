@@ -1,6 +1,7 @@
 #include "processing.h"
 #include "../utils/avformat.h"
 #include "../decoder/decoder.h"
+#include "../visualizer/visualizer.h"
 
 struct VideoCodecParams {
     int index;
@@ -81,12 +82,14 @@ namespace axomavis {
         }
         AVPacketWrapper packet;
         Decoder decoder(video_codec, codec_params);
+        VisualizerInferences visualizer;
         while (av_read_frame(fmt_in.get(), packet.get()) == 0) {
             if (packet->stream_index == video_index) {
                 switch (*(video_codec->pix_fmts)) {
                     case AVPixelFormat::AV_PIX_FMT_CUDA: {
                         auto frame_decoded = decoder.decode_gpu(packet);
                         if (frame_decoded.has_value()) {
+                            visualizer.render_nv12(frame_decoded.value());
                         }
                         break;
                     }
