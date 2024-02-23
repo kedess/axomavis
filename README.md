@@ -3,7 +3,7 @@ Video surveillance software
 
 - Saving video streams on a file system split into files
 
-### Example json sources filer
+### Example source streams json file 
 ```json 
 [
   {
