@@ -1,6 +1,7 @@
 #include "processing.h"
 #include "../utils/avformat.h"
 #include "../decoder/decoder.h"
+#include "../encoder/encoder.h"
 #include "../visualizer/visualizer.h"
 
 struct VideoCodecParams {
@@ -82,6 +83,7 @@ namespace axomavis {
         }
         AVPacketWrapper packet;
         Decoder decoder(video_codec, codec_params);
+        Encoder encoder(codec_params, *video_codec->pix_fmts);
         VisualizerInferences visualizer;
         while (av_read_frame(fmt_in.get(), packet.get()) == 0) {
             if (packet->stream_index == video_index) {
@@ -89,13 +91,24 @@ namespace axomavis {
                     case AVPixelFormat::AV_PIX_FMT_CUDA: {
                         auto frame_decoded = decoder.decode_gpu(packet);
                         if (frame_decoded.has_value()) {
-                            visualizer.render_nv12(frame_decoded.value());
+                            auto frame_inference = visualizer.render_nv12(frame_decoded.value());
+                            AVFrameWrapper hw_frame;
+                            av_hwframe_get_buffer(encoder.get_hw_frames_ref(), hw_frame.get(), 0);
+                                if (av_hwframe_transfer_data(hw_frame.get(), frame_inference.get(), 0) == 0) {
+                                    auto packets = encoder.encode_gpu(hw_frame.get());
+                                    // for(auto & packet : packets) {
+                                    // }
+                                }
                         }
                         break;
                     }
                     case AVPixelFormat::AV_PIX_FMT_YUV420P: {
                         auto frame_decoded = decoder.decode_cpu(packet);
                         if (frame_decoded.has_value()) {
+                            auto frame_inference = visualizer.render_yuv(frame_decoded.value());
+                            auto packets = encoder.encode_cpu(frame_inference.get());
+                            // for(auto & packet : packets) {
+                            // }
                         }
                         break;
                     }

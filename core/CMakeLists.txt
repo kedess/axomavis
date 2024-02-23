@@ -38,6 +38,7 @@ set(SRC_FILES
     src/state/state.cpp
     src/source/source.cpp
     src/decoder/decoder.cpp
+    src/encoder/encoder.cpp
     src/processing/processing.cpp
     src/visualizer/visualizer.cpp
 )
