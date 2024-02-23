@@ -80,7 +80,13 @@ int main(/*int argc, char * argv[]*/) {
     });
 
     std::vector<std::thread> threads;
-    std::vector<axomavis::Source> sources = axomavis::Source::from_file("/home/amazing-hash/sources.json");
+    std::vector<axomavis::Source> sources;
+    try {
+        sources = std::move(axomavis::Source::from_file("/home/amazing-hash/sources.json"));
+    } catch(const std::exception & ex) {
+        LOGE << "Error parsing sources json file";
+        signal_num = SIGQUIT;
+    }
 
     size_t nstreams_success = 0;
     for (auto source : sources) {
@@ -106,6 +112,7 @@ int main(/*int argc, char * argv[]*/) {
         }
     } else {
         LOGI << "There are no cameras to launch";
+        signal_num = SIGQUIT;
     }
     if (processing_thread.joinable()){
         processing_thread.join();
