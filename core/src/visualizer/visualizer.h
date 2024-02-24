@@ -8,7 +8,7 @@ extern "C"{
 #include "../utils/avframe.h"
 
 namespace axomavis {
-    class VisualizerInferences {
+    class VisualizerInferences final {
         public:
             VisualizerInferences() = default;
             ~VisualizerInferences() = default;

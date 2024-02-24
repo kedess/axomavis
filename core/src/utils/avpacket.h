@@ -6,7 +6,7 @@ extern "C"{
 }
 
 namespace axomavis {
-    class AVPacketWrapper {
+    class AVPacketWrapper final {
         public:
             AVPacketWrapper() {
                 auto ptr = av_packet_alloc();

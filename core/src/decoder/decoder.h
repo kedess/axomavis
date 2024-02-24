@@ -7,7 +7,7 @@
 #include "../utils/avpacket.h"
 
 namespace axomavis {
-    class Decoder {
+    class Decoder final {
         public:
             Decoder(const AVCodec * codec, const AVCodecParameters *codec_params);
             ~Decoder();

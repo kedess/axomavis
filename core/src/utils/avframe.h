@@ -7,7 +7,7 @@ extern "C"{
 }
 
 namespace axomavis {
-    class AVFrameWrapper {
+    class AVFrameWrapper final {
         public:
             AVFrameWrapper() {
                 ptr = av_frame_alloc();

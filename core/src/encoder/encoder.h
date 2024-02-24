@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace axomavis {
-    class Encoder {
+    class Encoder final {
         public:
             Encoder(const AVCodecParameters * codec_params, AVPixelFormat pix_fmt);
             ~Encoder();

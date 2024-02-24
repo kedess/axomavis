@@ -8,7 +8,7 @@
 #include <memory>
 
 namespace axomavis {
-    class Capture {
+    class Capture final {
         public:
             Capture(Source source);
             Capture(const Capture &p) = delete;

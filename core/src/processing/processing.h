@@ -5,7 +5,7 @@
 #include <string>
 
 namespace axomavis {
-    class Processing {
+    class Processing final {
         public:
             Processing(const char * input_filename);
             ~Processing() = default;

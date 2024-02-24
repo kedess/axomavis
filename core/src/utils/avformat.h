@@ -8,7 +8,7 @@ extern "C"{
 }
 
 namespace axomavis {
-    class AVFormatInput{
+    class AVFormatInput final {
         public:
             AVFormatInput(){
                 ctx = avformat_alloc_context();
@@ -38,7 +38,7 @@ namespace axomavis {
         private:
             AVFormatContext * ctx = nullptr;
     };
-    class AVFormatOutput{
+    class AVFormatOutput final {
         public:
             AVFormatOutput(const char * filename, std::vector<const AVCodecParameters*> & codec_params_list){
                 if (avformat_alloc_output_context2(&ctx, nullptr, nullptr, filename) < 0){

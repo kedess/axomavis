@@ -5,7 +5,7 @@
 using json = nlohmann::json;
 
 namespace axomavis {
-    class Source {
+    class Source final {
         public:
             Source(std::string id, std::string url);
             static std::vector<Source> from_file(const char * filename);

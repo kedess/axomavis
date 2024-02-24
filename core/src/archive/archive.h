@@ -4,7 +4,7 @@
 #include <chrono>
 
 namespace axomavis {
-    class Archive {
+    class Archive final {
         public:
             Archive(std::vector<const AVCodecParameters*> codec_params_list, const std::string & id);
             ~Archive();

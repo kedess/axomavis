@@ -9,7 +9,7 @@ extern "C"{
 }
 
 namespace axomavis {
-    class AVDecodeWrapper {
+    class AVDecodeWrapper final {
         public:
             AVDecodeWrapper(const AVCodec * codec, const AVCodecParameters *codec_params){
                 ctx = avcodec_alloc_context3(codec);
@@ -44,7 +44,7 @@ namespace axomavis {
             AVCodecContext * ctx = nullptr;
             
     };
-    class AVEncodeWrapper {
+    class AVEncodeWrapper final {
         public:
             AVEncodeWrapper(const AVCodec * codec){
                 ctx = avcodec_alloc_context3(codec);
