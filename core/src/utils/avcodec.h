@@ -30,7 +30,7 @@ namespace axomavis {
             }
             AVDecodeWrapper(const AVDecodeWrapper &p) = delete;
             AVDecodeWrapper& operator=(const AVDecodeWrapper&) = delete;
-            AVDecodeWrapper(AVDecodeWrapper &&p) {
+            AVDecodeWrapper(AVDecodeWrapper &&p) noexcept {
                 std::swap(ctx, p.ctx);
             }
             AVDecodeWrapper& operator=(AVDecodeWrapper&&) = delete;

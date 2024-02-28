@@ -37,7 +37,7 @@ namespace axomavis {
                         throw std::runtime_error("Not init device_ctx");
                     }
 
-                    ctx->hw_device_ctx = av_buffer_ref(hw_frames_ref);
+                    ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
                     ctx->hw_frames_ctx = av_buffer_ref(hw_frames_ref);
                     if (!ctx->hw_device_ctx || !ctx->hw_frames_ctx) {
                         throw std::runtime_error("Not init device_ctx");
@@ -106,9 +106,7 @@ namespace axomavis {
             if (ret < 0) {
                 break;
             }
-            if (av_hwframe_transfer_data(hw_frame.get(), av_frame, 0) == 0) {
-                packets.emplace_back(std::move(pkt));
-            }
+            packets.emplace_back(std::move(pkt));
         }
         return packets;
     }

@@ -20,7 +20,7 @@ namespace axomavis {
             }
             AVFrameWrapper(const AVFrameWrapper &p) = delete;
             AVFrameWrapper& operator=(const AVFrameWrapper&) = delete;
-            AVFrameWrapper(AVFrameWrapper &&p) {
+            AVFrameWrapper(AVFrameWrapper &&p) noexcept {
                 std::swap(ptr, p.ptr);
             }
             AVFrameWrapper& operator=(AVFrameWrapper&&) = delete;

@@ -23,7 +23,7 @@ namespace axomavis {
             }
             AVPacketWrapper(const AVPacketWrapper &p) = delete;
             AVPacketWrapper& operator=(const AVPacketWrapper&) = delete;
-            AVPacketWrapper(AVPacketWrapper &&p) {
+            AVPacketWrapper(AVPacketWrapper &&p) noexcept {
                 std::swap(pkt, p.pkt);
             };
             AVPacketWrapper& operator=(AVPacketWrapper&&) = delete;
