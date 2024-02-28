@@ -41,6 +41,7 @@ set(SRC_FILES
     src/encoder/encoder.cpp
     src/processing/processing.cpp
     src/visualizer/visualizer.cpp
+    src/writer/writer.cpp
 )
 
 include_directories(${FFMPEG_INCLUDE_DIRS})

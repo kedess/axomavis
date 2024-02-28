@@ -3,6 +3,7 @@
 #include "../decoder/decoder.h"
 #include "../encoder/encoder.h"
 #include "../visualizer/visualizer.h"
+#include "../writer/writer.h"
 
 struct VideoCodecParams {
     int index;
@@ -85,6 +86,10 @@ namespace axomavis {
         Decoder decoder(video_codec, codec_params);
         Encoder encoder(codec_params, *video_codec->pix_fmts);
         VisualizerInferences visualizer;
+        /*
+        * Имя файла для примера
+        */
+        Writer writer(video_codec, "/tmp/axomavis/inference.ts");
         while (av_read_frame(fmt_in.get(), packet.get()) == 0) {
             if (packet->stream_index == video_index) {
                 switch (*(video_codec->pix_fmts)) {
@@ -96,8 +101,10 @@ namespace axomavis {
                             av_hwframe_get_buffer(encoder.get_hw_frames_ref(), hw_frame.get(), 0);
                                 if (av_hwframe_transfer_data(hw_frame.get(), frame_inference.get(), 0) == 0) {
                                     auto packets = encoder.encode_gpu(hw_frame.get());
-                                    // for(auto & packet : packets) {
-                                    // }
+                                    for(auto & packet : packets) {
+                                        packet->pts = frame_decoded.value()->pts;
+                                        writer.recv_pkt(packet);
+                                    }
                                 }
                         }
                         break;
@@ -107,8 +114,10 @@ namespace axomavis {
                         if (frame_decoded.has_value()) {
                             auto frame_inference = visualizer.render_yuv(frame_decoded.value());
                             auto packets = encoder.encode_cpu(frame_inference.get());
-                            // for(auto & packet : packets) {
-                            // }
+                            for(auto & packet : packets) {
+                                packet->pts = frame_decoded.value()->pts;
+                                writer.recv_pkt(packet);
+                            }
                         }
                         break;
                     }
