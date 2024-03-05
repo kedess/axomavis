@@ -31,23 +31,12 @@ pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavdevice libavcodec libavfo
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-set(SRC_FILES
-    src/main.cpp
-    src/capture/capture.cpp
-    src/archive/archive.cpp
-    src/state/state.cpp
-    src/source/source.cpp
-    src/decoder/decoder.cpp
-    src/encoder/encoder.cpp
-    src/processing/processing.cpp
-    src/visualizer/visualizer.cpp
-    src/writer/writer.cpp
-)
+file(GLOB SRC_FILES "src/*/*.cpp")
 
 include_directories(${FFMPEG_INCLUDE_DIRS})
 link_directories(${FFMPEG_LIBRARY_DIRS})
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_executable(${PROJECT_NAME} ${SRC_FILES} "src/main.cpp")
 
 target_include_directories(${PROJECT_NAME} PRIVATE "core/src/plog/")
 
